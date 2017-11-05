@@ -1,0 +1,54 @@
+---
+
+# Backs up TeamSpeak 3 Server files and archives them on Ansible Server.
+#
+# Connects to the hosts referenced below.
+# Pulls the system date
+# stops the teamspeak service for backup
+# Backs up TS3 Server files and names them TS3_Backup_{Date}.zip in /tmp
+# starts the teamspeak service
+# transferes the .zip created to location on Ansible Server.
+#
+# This script is written for teamspeak3-server installed from ports
+#
+# Created by: Steven DeZalia
+# https://github.com/StevenDeZalia/
+
+
+- hosts: [Digital_Ocean_FreeBSD]
+  become: yes
+
+  tasks:
+
+
+# Gets System Date to later use in the backup file name
+    - debug: var=ansible_date_time
+
+
+# Stopping TeamSpeak 3 Service for Backup
+    - service:
+        name: teamspeak
+        state: stopped
+
+
+# Archiving TeamSpeak 3 Dir, Zipping to /tmp
+    - archive:
+        path: /var/db/teamspeak
+        dest: /tmp/TS3_Backup_{{ ansible_date_time.date }}.zip
+        format: zip
+
+
+# Starting TeamSpeak 3 Service after Backup
+    - service:
+        name: teamspeak
+        state: started
+
+
+# Copying backup *.zip located in /tmp to Ansible Server
+    - fetch:
+        src: /tmp/TS3_Backup_{{ ansible_date_time.date }}.zip
+        dest: /usr/local/etc/ansible/teamspeak/TS3_Backup_{{ ansible_date_time.date }}
+        fail_on_missing: yes
+        validate_checksum: yes
+
+...
