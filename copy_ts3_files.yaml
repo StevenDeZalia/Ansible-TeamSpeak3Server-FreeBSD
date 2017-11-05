@@ -1,0 +1,13 @@
+---
+
+- hosts: [Digital_Ocean_FreeBSD]
+  become: yes
+
+  tasks:
+    - copy:
+        src: ./teamspeak
+        dest: /var/db/
+        owner: teamspeak
+        group: teamspeak
+        mode: 0644
+...
